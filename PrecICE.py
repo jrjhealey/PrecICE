@@ -107,6 +107,10 @@ import imutils
 from imutils import contours
 from imutils import perspective
 from scipy.spatial import distance as dist
+import scipy.misc as sm
+import matplotlib as mpl
+mpl.use("TkAgg")
+from matplotlib import pyplot as plt
 import numpy as np
 import cv2
 import argparse
@@ -149,14 +153,31 @@ try:
                         'Utilises computer vision and image analysis to return '
                         'approximated feature dimensions.',
             usage='python PrecICE.py [-h|--help] [options] IMAGEFILE')
-    parser.add_argument('image', action='store',metavar='IMAGEFILE',
+
+    parser.add_argument('image',
+                        action='store',
+                        metavar='IMAGEFILE',
                         help='The image file to be analysed.')
-    parser.add_argument('--gkernel', action='store', type=int, default=5,metavar='N',
+    parser.add_argument('--gkernel',
+                        action='store',
+                        type=int,
+                        default=5,
+                        metavar='N',
                         help='Kernel size for Gaussian Blurring. [Def 5]')
-    parser.add_argument('--gsigma', action='store', type=int, default=0,metavar='N',
+    parser.add_argument('--gsigma',
+                        action='store',
+                        type=int,
+                        default=0,
+                        metavar='N',
                         help='Standard deviation of Gaussian Blur kernel. [Def 0]')
-    parser.add_argument('--ignore_intermediates', action='store_true',
+    parser.add_argument('--ignore_intermediates',
+                        action='store_true',
                         help='Output intermediate images from processing. [Def off]')
+    parser.add_argument('--skip_denoise',
+                        action='store_true',
+                        help='Skip the Gaussian blur de-noising step.'
+                             'If the image has well defined edges it may not be necessary '
+                             'or even offer and improvement over the with-blur processing.')
 
 except NameError:
     print "An exception occured with argument parsing. Check your provided options."
@@ -168,41 +189,60 @@ args = parser.parse_args()
 
 print('"PrecICE" Image analysis tool, version ' + __version__ + " by " + __author__ + ' <' + __author_email__ + '>\n')
 
-logging.info('Analysing image: %s' %args.image)
+print('Analysing image: %s \n' %args.image)
 
 # List of intermediate images to store for later
 intermediate_images = []
 intermediate_imagenames = []
 
 # IMAGE PREPROCESSING:
-logging.info('(1/10) Loading image: %s' %args.image)
+logging.info(' (Step 1/) Loading image: %s' %args.image)
 # 1. Read image in to numerical array
 image = cv2.imread(args.image)
 dims = np.size(image)
 
-logging.info('(2/10) Original image stored...')
 intermediate_images.append(image)
 intermediate_imagenames.append('Original Image')
+logging.info(' (Step 2/) Original image stored...')
 
 
 # IMAGE PREPROCESSING:
-
-
+print('\nPreprocessing beginning...\n')
+logging.info(' (Step 3/) Image converted to 8-bit greyscale...')
 greyed = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
 intermediate_images.append(greyed)
 intermediate_imagenames.append('Greyed Image')
+logging.info(' (Step 4/) Greyed image stored...')
 
 
-# Gaussian blur de-noises the image. Parameters are kernel size (5,5) and st. dev (0)
-blurred = cv2.GaussianBlur(greyed, (args.gkernel,args.gkernel), args.gsigma)
-intermediate_images.append(blurred)
-intermediate_imagenames.append('Gaussian Filtered Image')
+if args.skip_denoise is False:
+    logging.info(' (Step 5/) Gaussian Filtering the image with a %d x %d kernel (standard deviation %d)' %(args.gkernel, args.gkernel, args.gsigma))
+    # Gaussian blur de-noises the image. Parameters are kernel size (5,5) and st. dev (0)
+    blurred = cv2.GaussianBlur(greyed, (args.gkernel, args.gkernel), args.gsigma)
+    intermediate_images.append(blurred)
+    intermediate_imagenames.append('Gaussian Filtered Image')
+    logging.info(' (Step 6/) Gaussian filtered image stored...')
+else:
+    logging.info(' (Step 6/) --- SKIPPING STEP 6 DE-NOISING ---')
+
+
+#### NOT SURE IF TO BINARISE OR EDGE DETECT???
+
+logging.info(' (Step 7/) Binary thresholding the image (lower 127, upper 255)...')
+retval, binary = cv2.threshold(blurred,30 ,200, cv2.THRESH_BINARY)
+intermediate_images.append(binary)
+intermediate_imagenames.append('Binarized Image')
+logging.info(' (Step 7/) Binary threshold image stored...')
+
 
 # Canny edge detector
+logging.info(' (Step 8/) Detecting edges with Canny edge detector...')
 edged = cv2.Canny(blurred, 30, 200)
 intermediate_images.append(edged)
 intermediate_imagenames.append('Edged Image')
+logging.info(' (Step 9/) Edged image stored...')
 
+logging.info(' (Step 10/) Beginning ...')
 dilated = cv2.dilate(edged, None, iterations=1)
 intermediate_images.append(dilated)
 intermediate_imagenames.append('Dilated Image')
@@ -213,17 +253,34 @@ intermediate_imagenames.append('Eroded Image')
 
 
 
-
+# Next steps:
+# - complete the contour of the blobs (if erode-dilate isn't sufficient)
+# - fill the contour areas
+# - find pixel values > 100 etc (just blobs)
+# -
 
 
 # Output
 
-## Images
-if args.ignore_intermediates is False:
-    for name, imageobj in zip(intermediate_imagenames, intermediate_images):
-        cv2.imshow(name, imageobj)
+# ## Images
+# if args.ignore_intermediates is False:
+#     for name, imageobj in zip(intermediate_imagenames, intermediate_images):
+#         cv2.imshow(name, imageobj)
+#
+#     cv2.waitKey(0)
 
-    cv2.waitKey(0)
+# Panel images:
+
+# OpenCV's BGR encoding needs to be converted to RGB for matplotlib to display correctly:
+mpl_converted_intermediates = [sm.toimage(image) for image in intermediate_images]
+import math
+for i in xrange(len(zip(intermediate_imagenames, mpl_converted_intermediates))):
+    rows = math.ceil(float(len(mpl_converted_intermediates))/2)
+    plt.subplot(rows,2,i+1)
+    plt.imshow(mpl_converted_intermediates[i])
+    plt.title(intermediate_imagenames[i])
+    plt.xticks([]),plt.yticks([])
+plt.show()
 
 
 ## Numerics
