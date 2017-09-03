@@ -1,0 +1,6 @@
+opencv-python='3.3.0'
+imutils='0.4.3'
+argparse='1.1'
+numpy='1.13.1'
+scikit-image='0.13.0'
+scipy='0.13.0b1'
