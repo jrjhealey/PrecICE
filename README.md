@@ -69,6 +69,7 @@ to:
 
  * http://www.pyimagesearch.com/2016/03/28/measuring-size-of-objects-in-an-image-with-opencv/
  * http://opencvpython.blogspot.co.uk/2012/05/skeletonization-using-opencv-python.html    
+ * http://cmm.ensmp.fr/~beucher/wtshed.html
 
 and this interesting thread at StackOverflow:
 

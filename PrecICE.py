@@ -119,8 +119,16 @@ __license__ = "GPLv3"
 import numpy as np
 import cv2
 import argparse, traceback, os, sys, logging
+
+# Alter the logging behaviour
 custom_log = logging.getLogger().setLevel(logging.INFO)
 
+ch = logging.StreamHandler()
+# we want a rich output with additional information
+formatter = logging.Formatter('%(asctime)s - %(name)s - [%(levelname)s] - %(message)s',
+                              '%Y-%m-%d %H:%M:%S')
+ch.setFormatter(formatter)
+logger.addHandler(ch)
 
 # Collect commandline arguments
 try:
