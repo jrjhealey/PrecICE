@@ -39,22 +39,28 @@ shows you something like:
     $ python PrecICE.py [-h|--help] [options] IMAGEFILE
 
 # Advanced Usage
+        
+    usage: $ python PrecICE.py [-h|--help] [options] IMAGEFILE
     
-    $ python PrecICE.py [-h|--help] [options] IMAGEFILE
     
-     
     Computer vision program for feature size determination. Utilises computer
     vision and image analysis to return approximated feature dimensions.
- 
-     
+    
     positional arguments:
-      IMAGEFILE                The image file to be analysed.
-     
+      IMAGEFILE             The image file to be analysed.
+    
     optional arguments:
-      -h, --help               Show this help message and exit
-      --gkernel N              Kernel size for Gaussian Blurring. [Def 5]
-      --gsigma N               Standard deviation of Gaussian Blur kernel. [Def 0]
-      --ignore_intermediates   Output intermediate images from processing. [Def off (images are output)]
+      -h, --help            show this help message and exit
+      -o OUT, --out OUT     Output filename stem for image saving.
+      --kernel_size N       Kernel size passed to relevant functions (one kernel
+                            for all functions for now). [Def 7]
+      --gsigma N            Standard deviation of Gaussian Blur kernel. [Def 0]
+      --ignore_intermediates
+                            Don't output intermediate images from processing. [Def
+                            off]
+      --scaling SCALING     OpenCV displays images fullsize, this scales them down
+                            to this fraction of screen size.
+
 
 # Disclaimers
 This software is not well tested, and the many dependencies may make it difficult to install for the uninitiated. I also

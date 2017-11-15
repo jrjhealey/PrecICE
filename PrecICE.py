@@ -151,12 +151,13 @@ try:
                         default=2,
                         metavar='N',
                         help='Standard deviation of Gaussian Blur kernel. [Def 0]')
-    parser.add_argument('--thresh_bounds',
-                        action='store',
-                        nargs=2,
-                        metavar=('lower', 'upper'),
-                        default=[0,15],
-                        help='Lower and upper bound of pixel intensity for thresholding. [Def 0,15]')
+# Custom boundary definition to be implemented later
+#    parser.add_argument('--thresh_bounds',
+#                        action='store',
+#                        nargs=2,
+#                        metavar=('lower', 'upper'),
+#                        default=[0,15],
+#                        help='Lower and upper bound of pixel intensity for thresholding. [Def 0,15]')
     parser.add_argument('--ignore_intermediates',
                         action='store_true',
                         help='Don\'t output intermediate images from processing. [Def off]')
